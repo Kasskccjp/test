@@ -1,0 +1,43 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Sell
+{% endblock %}
+
+{% block main %}
+<h1>Sell Stock</h1>
+
+<!-- 股票列表 -->
+<table class="table table-bordered table-striped text-center">
+    <thead class="thead-dark">
+        <tr>
+            <th>Stock</th>
+            <th>Shares</th>
+            <th>Price</th>
+            <th>Total Value</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for stock in stocks %}
+        <tr>
+            <td>{{ stock.symbol }}</td>
+            <td>{{ stock.shares }}</td>
+            <td>{{ stock.price | usd }}</td>
+            <td>{{ stock.total_value | usd }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 賣股票表單 -->
+<form action="/sell" method="post">
+    <select name="symbol" required>
+        <option value="" disabled {% if not selected_symbol %}selected{% endif %}>Select Stock</option>
+        {% for stock in stocks %}
+        <option value="{{ stock.symbol }}" {% if stock.symbol == selected_symbol %}selected{% endif %}>{{ stock.symbol }}</option>
+        {% endfor %}
+    </select>
+    <input name="shares" type="number" placeholder="Number of Shares" required>
+    <button type="submit">Sell</button>
+</form>
+{% endblock %}

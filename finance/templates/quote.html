@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+
+{% block title %}
+Quote
+{% endblock %}
+
+{% block main %}
+<h1>Get Stock Quote</h1>
+<form action="/quote" method="post">
+    <input name="symbol" type="text" placeholder="Enter symbol" required>
+    <button type="submit">Get Quote</button>
+</form>
+
+{% if stock %}
+    <h1>Stock Information</h1>
+    <p>Name: {{ stock.name }}</p>
+    <p>Symbol: {{ stock.symbol }}</p>
+    <p>Price: {{ stock.price | usd }}</p>
+
+    <!-- 按鈕跳轉至買入頁面 -->
+    <form action="/buy" method="get" style="margin-top: 20px;">
+        <input type="hidden" name="symbol" value="{{ stock.symbol }}">
+        <button type="submit">Buy {{ stock.symbol }}</button>
+    </form>
+
+{% elif error %}
+    <div class="alert alert-danger" role="alert">
+        {{ error }}
+    </div>
+{% endif %}
+
+<!-- 返回 Portfolio 按鈕 -->
+<form action="/" method="get" style="margin-top: 20px;">
+    <button type="submit">Return to Portfolio</button>
+</form>
+{% endblock %}

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+    {% extends "layout.html" %}
+
+    {% block title %}
+    Buy
+    {% endblock %}
+
+    {% block main %}
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script>
+            function calculateTotal() {
+                const price = parseFloat(document.getElementById("price").value || 0);
+                const shares = parseInt(document.getElementById("shares").value || 0);
+
+                if (price > 0 && shares > 0) {
+                    const total = price * shares;
+                    document.getElementById("total-price").innerText = `Total Price: $${total.toFixed(2)}`;
+                } else {
+                    document.getElementById("total-price").innerText = "Total Price: $0.00";
+                }
+            }
+
+            async function updatePrice() {
+                const symbol = document.getElementById("symbol").value.trim().toUpperCase();
+                if (!symbol) {
+                    document.getElementById("price-display").innerText = "$0.00";
+                    document.getElementById("price").value = "0";
+                    calculateTotal();
+                    return;
+                }
+
+                try {
+                    const response = await fetch(`/quote?symbol=${symbol}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.price) {
+                            document.getElementById("price").value = data.price.toFixed(2);
+                            document.getElementById("price-display").innerText = `$${data.price.toFixed(2)}`;
+                            calculateTotal();
+                        } else {
+                            document.getElementById("price-display").innerText = "Invalid Symbol";
+                            document.getElementById("price").value = "0";
+                            calculateTotal();
+                        }
+                    } else {
+                        throw new Error("Failed to fetch price");
+                    }
+                } catch (error) {
+                    console.error("Error fetching price:", error);
+                    document.getElementById("price-display").innerText = "Error";
+                    document.getElementById("price").value = "0";
+                }
+            }
+        </script>
+    </head>
+
+    <body>
+        <h1>Buy Stocks</h1>
+        <form action="/buy" method="post">
+            <!-- Stock Symbol -->
+            <label for="symbol">Symbol:</label>
+            <input
+                type="text"
+                id="symbol"
+                name="symbol"
+                value="{{ symbol if symbol else '' }}"
+                placeholder="Enter Symbol"
+                oninput="updatePrice()"
+                required
+            ><br><br>
+
+            <!-- Stock Price -->
+            <label for="price">Price:</label>
+            <span id="price-display">${{ stock.price | usd }}</span>
+            <input type="hidden" id="price" name="price" value="{{ stock.price }}"><br><br>
+
+            <!-- Number of Shares -->
+            <label for="shares">Shares:</label>
+            <input
+                type="number"
+                id="shares"
+                name="shares"
+                min="1"
+                value="1"
+                oninput="calculateTotal()"
+                required
+            ><br><br>
+
+            <!-- User Cash Available -->
+            <p>Cash Available: {{ cash | usd }}</p>
+
+            <!-- Total Price -->
+            <p id="total-price">Total Price: $0.00</p>
+
+            <!-- Submit Button -->
+            <button type="submit">Buy</button>
+        </form>
+
+        <!-- Return to Portfolio -->
+        <form action="/" method="get" style="margin-top: 20px;">
+            <button type="submit">Return to Portfolio</button>
+        </form>
+    </body>
+    {% endblock %}
+</html>
